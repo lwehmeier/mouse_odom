@@ -1,0 +1,8 @@
+<!-- Starts up everything needed to run the example listener/talker Python nodes. -->
+
+<launch>
+  <node pkg="mouse_odom" type="mouse_odom.py" name="mouse_odom">
+    <param name="rate" value="10"/>
+  </node>
+
+</launch>
