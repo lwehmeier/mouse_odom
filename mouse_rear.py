@@ -5,7 +5,7 @@ from math import sin, cos, pi
 import rospy
 import tf
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
+from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3, Vector3Stamped
 import struct
 import evdev
 global scaling
@@ -29,10 +29,13 @@ def my_callback(event):
     global abs_y
     abs_x = abs_x + mov_x*scaling
     abs_y = abs_y + mov_y*scaling
-    pub.publish(Vector3(x=mov_x*scaling, y=mov_y*scaling, z=0))
+    vec = Vector3Stamped()
+    vec.vector = Vector3(x=mov_x*scaling, y=mov_y*scaling, z=0)
+    vec.header.stamp = rospy.Time.now()
+    pub.publish(vec)
     odom = Odometry()
     odom.header.stamp = rospy.Time.now()
-    odom.header.frame_id = "mouse_odom"
+    odom.header.frame_id = "mouse_rear"
     # since all odometry is 6DOF we'll need a quaternion created from yaw
     odom_quat = tf.transformations.quaternion_from_euler(0, 0, 0)
     odom.pose.pose = Pose(Point(abs_x, abs_y, 0.), Quaternion(*odom_quat))
@@ -42,11 +45,11 @@ def my_callback(event):
     mov_x = 0
     mov_y = 0
 
-device = evdev.InputDevice( "/dev/input/event1" );
-rospy.init_node('mouse_odom')
+device = evdev.InputDevice( "/dev/input/event3" );
+rospy.init_node('mouse_rear')
 print(device)
-pub = rospy.Publisher('/mouse/rel', Vector3, queue_size=3)
-odom_pub = rospy.Publisher("/mouse/odom", Odometry, queue_size=3)
+pub = rospy.Publisher('/mouse/rear/rel', Vector3Stamped, queue_size=3)
+odom_pub = rospy.Publisher("/mouse/rear/odom", Odometry, queue_size=3)
 r = rospy.Rate(10) # 10hz
 rospy.Timer(rospy.Duration(0.1), my_callback)
 for event in device.read_loop():
