@@ -7,9 +7,7 @@
   <node pkg="mouse_odom" type="mouse_rear.py" name="mouse_rear">
     <param name="rate" value="10"/>
   </node>
-<!--
   <node pkg="mouse_odom" type="mouse_combined.py" name="mouse_combined">
     <param name="rate" value="10"/>
   </node>
--->
 </launch>

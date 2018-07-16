@@ -45,23 +45,26 @@ def my_callback(event):
     try:
         t_front =  tfBuffer.lookup_transform(BASE_FRAME, 'mouse_front', rospy.Time())
         t_rear = tfBuffer.lookup_transform(BASE_FRAME, 'mouse_rear', rospy.Time())
-        r = t_front.transform.translation.y
+        r = t_front.transform.translation.x
         v_front = last_front.vector
         v_rear = last_rear.vector
+        print("("+str(v_front.x - v_rear.x)+","+str(v_front.y - v_rear.y)+")")
         v = Vector3()
         v.x = (v_front.x + v_rear.x)/2
         v.y = (v_front.y + v_rear.y)/2
         omega = ((v_front.x -v.x) - (v_rear.x - v.x)) / 2
-        travel_x = v.x * UPDATE_PERIOD
-        travel_y = v.y * UPDATE_PERIOD
+        travel_x = v.x
+        travel_y = v.y
+        travel_x = (travel_x * cos(estimated_orientation.z) + travel_y * sin(estimated_orientation.z));
+        travel_y = (travel_x * sin(estimated_orientation.z) + travel_y * cos(estimated_orientation.z));
         estimated_position.x = estimated_position.x + travel_x
         estimated_position.y = estimated_position.y + travel_y
-        rot_travel = omega * UPDATE_PERIOD
+        rot_travel = omega
         yaw = rot_travel / r
         estimated_orientation.z = estimated_orientation.z + yaw
         odom = Odometry()
         odom.header.stamp = rospy.Time.now()
-        odom.header.frame_id = BASE_FRAME
+        odom.header.frame_id = "odom"
         odom_quat = tf.transformations.quaternion_from_euler(estimated_orientation.z,0,0,"rzyx")
         odom.pose.pose = Pose(Point(estimated_position.x, estimated_position.y, 0), Quaternion(*odom_quat))
         odom.child_frame_id = BASE_FRAME
@@ -75,8 +78,8 @@ rospy.init_node('mouse_combined')
 tfBuffer = tf2_ros.Buffer()
 listener = tf2_ros.TransformListener(tfBuffer)
 odom_pub = rospy.Publisher("/mouse/odom", Odometry, queue_size=3)
-r = rospy.Rate(10) # 10hz
-rospy.Timer(rospy.Duration(0.1), my_callback)
+r = rospy.Rate(5) # 10hz
+rospy.Timer(rospy.Duration(0.2), my_callback)
 rospy.Subscriber("/mouse/rear/rel", Vector3Stamped, callback_rear)
 rospy.Subscriber("/mouse/front/rel", Vector3Stamped, callback_front)
 rospy.spin()
