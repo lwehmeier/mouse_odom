@@ -35,6 +35,7 @@ def my_callback(event):
     vec.vector = Vector3(x=mov_x*scaling, y=mov_y*scaling, z=0)
     vec.header.stamp = rospy.Time.now()
     pub.publish(vec)
+    print(vec)
     #odom = Odometry()
     #try:
     #    transf = tfBuffer.lookup_transform(BASE_FRAME, 'mouse_rear', rospy.Time())
@@ -56,7 +57,7 @@ def my_callback(event):
     #mov_x = 0
     #mov_y = 0
 
-device = evdev.InputDevice( "/dev/input/event3" );
+device = evdev.InputDevice( "/dev/input/event1" );
 rospy.init_node('mouse_rear')
 tfBuffer = tf2_ros.Buffer()
 tf2_ros.TransformListener(tfBuffer)
